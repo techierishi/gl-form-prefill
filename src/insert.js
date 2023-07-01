@@ -1,5 +1,10 @@
 const { Component, h, render } = window.preact;
 
+function plainString(str) {
+    str = str.trim();
+    str = str.replace(/[^\w\s]/gi, '');
+    return str
+}
 
 class App extends Component {
 
@@ -29,29 +34,31 @@ class GlPfForm extends Component {
                 value: valInput.value
             })
         })
-        let saveKey = prompt('Please enter form name:');
-        const repoKey = btoa(location.href)
-
+        const repoKey = plainString(location.href)
         let formData = localStorage.getItem(repoKey)
+        let formDataJson = {}
 
+        let saveKey = prompt('Please enter form name:');
         if (formData) {
             formDataJson = JSON.parse(formData)
             formDataJson[saveKey] = dataToSave
         } else {
-            formDataJson = {}
             formDataJson[saveKey] = dataToSave
         }
 
         localStorage.setItem(repoKey, JSON.stringify(formDataJson))
-        return false
+
+        console.log("JSON.stringify(formDataJson)", JSON.stringify(formDataJson))
+
+        event.preventDefault();
     }
 
     render(props, state) {
         return h('div', { className: "gl-pf-form-app", style: "margin-left:10px" },
-            h('button', { 
-                className: "gl-pf-save-bttn btn btn-confirm btn-default btn-md gl-mr-3 gl-button",
+            h('button', {
+                className: "btn btn-default btn-md gl-mr-3 gl-button",
                 onClick: this.handleClick
-            }, null, 'Save & Run'),
+            }, null, 'Save form'),
             props.message && h(Dropdown, null, props.message)
         );
     }
@@ -65,20 +72,54 @@ class Dropdown extends Component {
         };
     }
 
-    handleChange = (event) => {
+    simulateTyping = (inputElement, text) => {
+        const keydownEvent = new KeyboardEvent('keydown');
+        const keyupEvent = new KeyboardEvent('keyup');
+        const inputEvent = new InputEvent('input');
+        const focusEvent = new FocusEvent('focus');
+        const blurEvent = new FocusEvent('blur');
+        const changeEvent = new Event('change');
+        inputElement.dispatchEvent(focusEvent);
+
+        inputElement.value = text;
+        inputElement.dispatchEvent(keydownEvent);
+        inputElement.dispatchEvent(inputEvent);
+        inputElement.dispatchEvent(keyupEvent);
+
+        inputElement.dispatchEvent(changeEvent);
+        inputElement.dispatchEvent(blurEvent);
+
+    }
+
+    handleChange = async (event) => {
         this.setState({ selectedOption: event.target.value });
+        const repoKey = plainString(location.href)
+        let formData = localStorage.getItem(repoKey)
+        if (formData) {
+            let formDataJson = JSON.parse(formData)
+
+            for (let formItem of formDataJson[event.target.value]) {
+                const keyInputs = document.querySelectorAll('input[data-testid="pipeline-form-ci-variable-key"]')
+                const valInputs = document.querySelectorAll('textarea[data-testid="pipeline-form-ci-variable-value"]')
+
+                keyInputs.length && this.simulateTyping(keyInputs[keyInputs.length - 1], formItem?.key)
+                valInputs.length && this.simulateTyping(valInputs[valInputs.length - 1], formItem?.value)
+                await new Promise(r => setTimeout(r, 100));
+            }
+        }
+
     }
 
     render() {
-        const repoKey = btoa(location.href)
+        const repoKey = plainString(location.href)
         let formData = localStorage.getItem(repoKey)
         let formDataJson = JSON.parse(formData)
         const options = [
-            h('option', { value: '' }, 'Select an option')
+            h('option', { value: '' }, 'Select a form')
         ]
 
         const getForms = () => {
-            for (let formName of Object.keys(formDataJson)){
+            for (let formName of Object.keys(formDataJson)) {
                 options.push(
                     h('option', { value: formName }, formName)
                 )
@@ -86,11 +127,14 @@ class Dropdown extends Component {
             return options
         }
 
-        return h('select', {
-            className: "btn dropdown-toggle btn-default btn-md gl-button gl-dropdown-toggle",
-            id: this.props.id,
-            onChange: this.handleChange
-        }, getForms())
+        if (formData) {
+            return h('select', {
+                className: "btn dropdown-toggle btn-default btn-md gl-button gl-dropdown-toggle",
+                id: this.props.id,
+                onChange: this.handleChange
+            }, getForms())
+        }
+        return null
     }
 }
 
@@ -115,13 +159,12 @@ class Dropdown extends Component {
 
 
     const insertButton = () => {
-        console.log("insertButton")
         const pathName = document.location.pathname
         const geJsonButton = document.querySelector('.gl-pf-form')
         if (geJsonButton) {
             return false
         }
-
+        console.log("insertButton")
         createContainer()
         renderForm()
     }
