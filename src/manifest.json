@@ -1,0 +1,36 @@
+{
+    "name": "Gitlab_PreFill_Form",
+    "version": "1.0.0",
+    "description": "Gitlab Pre Fill Form",
+    "manifest_version": 3,
+    "author": "Rishi",
+    "permissions": [],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "action": {
+        "default_icon": "res/img/16.png"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://*.gitlab.com/*",
+                "https://gitlab.com/*"
+            ],
+            "js": [
+                "res/preact.min.js",
+                "insert.js"
+            ],
+            "css": [
+                "res/style.css"
+            ],
+            "run_at": "document_end"
+        }
+    ],
+    "icons": {
+        "16": "res/img/16.png",
+        "32": "res/img/32.png",
+        "48": "res/img/48.png",
+        "128": "res/img/128.png"
+    }
+}

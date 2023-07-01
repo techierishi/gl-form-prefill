@@ -1,0 +1,5 @@
+.vscode/
+node_modules
+dist
+gl-pipeline-form
+.DS_Store
