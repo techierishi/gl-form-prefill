@@ -22,9 +22,6 @@
                 "res/preact.min.js",
                 "insert.js"
             ],
-            "css": [
-                "res/style.css"
-            ],
             "run_at": "document_end"
         }
     ],
