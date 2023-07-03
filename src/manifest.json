@@ -15,7 +15,8 @@
         {
             "matches": [
                 "https://*.gitlab.com/*",
-                "https://gitlab.com/*"
+                "https://gitlab.com/*",
+                "https://gitlab.*.com/*"
             ],
             "js": [
                 "res/preact.min.js",
