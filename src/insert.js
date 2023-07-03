@@ -159,18 +159,19 @@ class Dropdown extends Component {
 
 
     const insertButton = () => {
-        const pathName = document.location.pathname
+        const pathName = document?.location?.pathname
+        if (!pathName?.includes("pipelines/new")){
+            return
+        }
         const geJsonButton = document.querySelector('.gl-pf-form')
         if (geJsonButton) {
             return false
         }
-        console.log("insertButton")
         createContainer()
         renderForm()
     }
-
+    
     insertButton()
-
     setInterval(insertButton, 3000)
-
+    
 })()
